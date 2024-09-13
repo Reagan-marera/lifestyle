@@ -110,20 +110,24 @@ def create_app():
     # Login route
     @app.route('/login', methods=['POST'])
     def login():
-        data = request.json
-        email = data.get('email')
-        password = data.get('password')
-        
-        student = Student.query.filter_by(email=email).first()
-        ceo = CEO.query.filter_by(email=email).first()
+     data = request.json
+     email = data.get('email')
+     password = data.get('password')
+    
+    # Check if the user is a Student or CEO
+     student = Student.query.filter_by(email=email).first()
+     ceo = CEO.query.filter_by(email=email).first()
 
-        user = student or ceo
-        if user and check_password_hash(user.password_hash, password):
-            role = 'CEO' if ceo else 'Student'
-            access_token = create_access_token(identity={'id': user.id, 'role': role})
-            return jsonify({'access_token': access_token}), 200
-        
-        return jsonify({'message': 'Invalid credentials.'}), 401
+    # Identify user and their role
+     user = student or ceo
+     if user and check_password_hash(user.password_hash, password):
+        # Determine role based on which user object is returned
+        role = 'CEO' if ceo else 'Student'
+        access_token = create_access_token(identity={'id': user.id, 'role': role})
+        return jsonify({'access_token': access_token}), 200
+
+    # If credentials are invalid
+     return jsonify({'message': 'Invalid credentials.'}), 401
 
     # Create student (CEO access only)
     @app.route('/students', methods=['POST'])
